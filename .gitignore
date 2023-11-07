@@ -1,0 +1,4 @@
+*.exe
+kraftpek
+!cmd/kraftpek
+.idea
