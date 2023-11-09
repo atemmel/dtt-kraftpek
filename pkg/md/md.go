@@ -1,6 +1,9 @@
 package md
 
-import "strings"
+import (
+	"strings"
+	"unicode"
+)
 
 type Node interface {
 	Children() []Node
@@ -41,12 +44,16 @@ func ParseMd(src string) Root {
 
 	for i := 0; i < len(src); i++ {
 
-		if child := readHeader(&i, src); child != nil {
+		if child := readUnorderedList(&i, src); child != nil {
+			root.Children = append(root.Children, child)
+			continue
+		}
+		if child := readOrderedList(&i, src); child != nil {
 			root.Children = append(root.Children, child)
 			continue
 		}
 
-		if child := readList(&i, src); child != nil {
+		if child := readHeader(&i, src); child != nil {
 			root.Children = append(root.Children, child)
 			continue
 		}
@@ -77,15 +84,32 @@ func readHeader(index *int, src string) Node {
 
 }
 
-func readList(index *int, src string) Node {
-
-	return readUnorderedList(index, src)
-	//readOrderedList()
-
-}
-
 func readOrderedList(index *int, src string) Node {
-	return nil
+	if !unicode.IsNumber(rune(src[*index])) {
+		return nil
+	}
+	if src[*index+1] != '.' {
+		return nil
+	}
+
+	list := &List{
+		children: make([]Node, 0),
+		Ordered:  true,
+	}
+
+	for ; *index < len(src); *index++ {
+		if !unicode.IsNumber(rune(src[*index])) {
+			*index--
+			break
+		}
+		if src[*index+1] != '.' {
+			*index--
+			break
+		}
+		list.children = append(list.children, readText(index, src))
+	}
+
+	return list
 }
 
 func readUnorderedList(index *int, src string) Node {
@@ -101,6 +125,7 @@ func readUnorderedList(index *int, src string) Node {
 	for ; *index < len(src); *index++ {
 		c := src[*index]
 		if c != '*' {
+			*index--
 			break
 		}
 		list.children = append(list.children, readText(index, src))
@@ -113,7 +138,6 @@ func readText(index *int, src string) Node {
 	textBegin := *index
 	for ; *index < len(src); *index++ {
 		c := src[*index]
-
 		if c == '\n' {
 			line := src[textBegin:*index]
 			textBegin = *index + 1
