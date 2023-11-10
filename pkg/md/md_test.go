@@ -101,3 +101,17 @@ random text
 		t.Fatal("Förväntades hitta oordnad lista")
 	}
 }
+
+func TestParseMdCode(t *testing.T) {
+	src := "#en header" +
+		"```Go" +
+		"print(\"hej\")" +
+		"```"
+
+	root := ParseMd(src)
+
+	if root.Children != nil {
+		t.Fatal("Inte klart test")
+	}
+
+}

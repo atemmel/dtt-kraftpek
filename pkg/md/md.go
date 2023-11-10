@@ -14,6 +14,10 @@ type Header struct {
 	Level int
 }
 
+type Code struct {
+	Child Node
+}
+
 type List struct {
 	children []Node
 	Ordered  bool
@@ -44,6 +48,11 @@ func ParseMd(src string) Root {
 
 	for i := 0; i < len(src); i++ {
 
+		if child := readCode(&i, src); child != nil {
+			root.Children = append(root.Children, child)
+			continue
+		}
+
 		if child := readUnorderedList(&i, src); child != nil {
 			root.Children = append(root.Children, child)
 			continue
@@ -66,6 +75,22 @@ func ParseMd(src string) Root {
 	}
 
 	return root
+}
+
+func readCode(index *int, src string) Node {
+
+	if len(src)-*index < 3 {
+		return nil
+	}
+
+	if src[*index:3] != "```" {
+		return nil
+	}
+	*index += 3
+
+	print(readText(index, src))
+
+	return nil
 }
 
 func readHeader(index *int, src string) Node {
