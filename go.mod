@@ -11,4 +11,5 @@ require (
 	golang.org/x/sys v0.5.0 // indirect
 	golang.org/x/term v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
+  github.com/yuin/goldmark v1.6.0 // indirect
 )
