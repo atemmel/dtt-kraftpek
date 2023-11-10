@@ -15,7 +15,8 @@ type Header struct {
 }
 
 type Code struct {
-	Child Node
+	Child []Node
+	Lang  string
 }
 
 type List struct {
@@ -40,6 +41,9 @@ func (h *Header) Children() []Node {
 }
 func (l *List) Children() []Node {
 	return l.Children()
+}
+func (c *Code) Children() []Node {
+	return c.Children()
 }
 
 func ParseMd(src string) Root {
@@ -87,10 +91,22 @@ func readCode(index *int, src string) Node {
 		return nil
 	}
 	*index += 3
+	language := ""
+	textBegin := *index
+	for ; *index < len(src); *index++ {
+
+		if src[*index] == '\n' {
+			language = src[textBegin:*index]
+		}
+
+	}
 
 	print(readText(index, src))
 
-	return nil
+	return &Code{
+		Lang: language,
+	}
+
 }
 
 func readHeader(index *int, src string) Node {
