@@ -1,14 +1,32 @@
 package main
 
 import (
+	"os"
+
 	"github.com/gdamore/tcell/v2"
 	_ "github.com/gdamore/tcell/v2/encoding"
 	"github.com/mattn/go-runewidth"
 )
 
 var (
-	screen  tcell.Screen
-	running bool = true
+	screen tcell.Screen
+
+	currentSlide = 0
+	slides       = [][]string{
+		{
+			"Rubrik till slide 1",
+			"",
+			"* Punkt 1",
+			"* Punkt 2",
+			"* Punkt 3",
+		},
+		{
+			"Slide 2",
+		},
+		{
+			"Slide 3",
+		},
+	}
 )
 
 func Assert(err error) {
@@ -32,19 +50,53 @@ func DrawStr(screen tcell.Screen, x, y int, style tcell.Style, str string) {
 }
 
 func Draw() {
-	w, h := screen.Size()
 	screen.Clear()
-	style := tcell.StyleDefault.
-		Foreground(tcell.ColorCadetBlue.TrueColor()).
-		Background(tcell.ColorWhite)
-	DrawStr(screen, w/2-7, h/2, style, "Hello, World!")
-	DrawStr(screen, w/2-9, h/2+1, tcell.StyleDefault, "Press ESC to exit.")
+	// exempel på hur styling kan sättas
+
+	//style := tcell.StyleDefault.
+	//Foreground(tcell.ColorCadetBlue.TrueColor()).
+	//Background(tcell.ColorWhite)
+
+	x, y := GetUpperSlideCorner()
+	for idx, row := range slides[currentSlide] {
+		DrawStr(screen, x, y+idx, tcell.StyleDefault, row)
+	}
 	screen.Show()
+}
+
+func GetUpperSlideCorner() (int, int) {
+	//TODO: range check
+	w := len(slides[currentSlide][0])
+	for _, row := range slides[currentSlide] {
+		if len(row) > w {
+			w = len(row)
+		}
+	}
+
+	h := len(slides[currentSlide])
+
+	sw, sh := screen.Size()
+
+	x := sw/2 - w/2
+	y := sh/2 - h/2
+	return x, y
 }
 
 func Quit() {
 	screen.Fini()
-	running = false
+	os.Exit(0)
+}
+
+func Left() {
+	if currentSlide > 0 {
+		currentSlide--
+	}
+}
+
+func Right() {
+	if currentSlide < len(slides)-1 {
+		currentSlide++
+	}
 }
 
 func main() {
@@ -61,15 +113,30 @@ func main() {
 
 	Draw()
 
-	for running {
+	for {
 		switch ev := screen.PollEvent().(type) {
 		case *tcell.EventResize:
 			screen.Sync()
 			Draw()
 		case *tcell.EventKey:
-			if ev.Key() == tcell.KeyEscape {
+			switch ev.Key() {
+			case tcell.KeyEscape:
 				Quit()
+			case tcell.KeyLeft:
+				Left()
+			case tcell.KeyRight:
+				Right()
 			}
+
+			switch ev.Rune() {
+			case 'h':
+				Left()
+			case 'l':
+				Right()
+			}
+
+			screen.Sync()
+			Draw()
 		}
 	}
 }
