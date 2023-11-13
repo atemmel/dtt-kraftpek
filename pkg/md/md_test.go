@@ -97,7 +97,7 @@ random text
 	if !root.Children[1].(*List).Ordered {
 		t.Fatal("Förväntades hitta ordnad lista")
 	}
-	if root.Children[1].(*List).Ordered {
+	if root.Children[2].(*List).Ordered {
 		t.Fatal("Förväntades hitta oordnad lista")
 	}
 }
