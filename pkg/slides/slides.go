@@ -5,11 +5,13 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/atemmel/dtt-kraftpek/pkg/md"
 )
 
 type Slide struct {
 	Name string
-	Bytes []byte
+	Root md.Root
 }
 
 type readResult struct {
@@ -66,10 +68,12 @@ func readSlide(channel chan readResult, which string, number int) {
 		}
 	}
 
+	root := md.ParseMd(string(bytes))
+
 	channel <- readResult{
 		Slide: Slide{
 			Name: name,
-			Bytes: bytes,
+			Root: root,
 		},
 		Number: number,
 		Error: nil,
