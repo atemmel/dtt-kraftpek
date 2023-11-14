@@ -52,12 +52,10 @@ func ParseMd(src string) Root {
 
 	for i := 0; i < len(src); i++ {
 
-		/*
 		if child := readCode(&i, src); child != nil {
 			root.Children = append(root.Children, child)
 			continue
 		}
-		*/
 
 		if child := readUnorderedList(&i, src); child != nil {
 			root.Children = append(root.Children, child)
