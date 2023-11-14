@@ -1,7 +1,7 @@
-# Intro
+Intro
 
 Här är ett intro
 
-* Lorem
-* Ipsum
-* Dolor sit amet
+Lorem
+Ipsum
+Dolor sit amet
