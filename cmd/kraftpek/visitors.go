@@ -100,8 +100,24 @@ func (r *Renderer) VisitText(text *md.Text) {
 
 func (r *Renderer) drawColoredCodeText(text string) {
 	wordBegin := 0
-	for i, c := range text {
-		if c == ' ' {
+	for i := 0; i < len(text); i++ {
+		c := text[i]
+		if c == '"' {
+			strBegin := i
+			i++
+			for ; i < len(text); i++ {
+				if text[i] == '"' {
+					break
+				}
+			}
+			str := text[strBegin : i+1]
+			prevWord := text[wordBegin:strBegin]
+			style := tcell.StyleDefault.
+				Foreground(tcell.ColorPurple.TrueColor())
+			DrawStr(r.Screen, r.x+wordBegin, r.y, tcell.StyleDefault, prevWord)
+			DrawStr(r.Screen, r.x+strBegin, r.y, style, str)
+			wordBegin = i + 1
+		} else if c == ' ' {
 			word := text[wordBegin:i]
 			style := tcell.StyleDefault
 			_, ok := goKeywords[word]
