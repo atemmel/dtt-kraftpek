@@ -21,11 +21,6 @@ var (
 
 func Draw(screen tcell.Screen, renderer *Renderer) {
 	screen.Clear()
-	// exempel på hur styling kan sättas
-
-	//style := tcell.StyleDefault.
-	//Foreground(tcell.ColorCadetBlue.TrueColor()).
-	//Background(tcell.ColorWhite)
 
 	root := &loadedSlides[currentSlide].Root
 	renderer.VisitRoot(root)
