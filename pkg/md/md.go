@@ -50,11 +50,11 @@ func (h *Header) Children() []Node {
 }
 
 func (l *List) Children() []Node {
-	return l.Children()
+	return l.children
 }
 
 func (c *Code) Children() []Node {
-	return c.Children()
+	return c.Child
 }
 
 func (t *Text) Accept(v Visitor) {
@@ -196,6 +196,7 @@ func readUnorderedList(index *int, src string) Node {
 			*index--
 			break
 		}
+		*index++
 		list.children = append(list.children, readText(index, src))
 	}
 
