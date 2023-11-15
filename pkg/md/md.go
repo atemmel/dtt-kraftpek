@@ -5,8 +5,17 @@ import (
 	"unicode"
 )
 
+type Visitor interface {
+	VisitHeader(*Header)
+	VisitCode(*Code)
+	VisitList(*List)
+	VisitText(*Text)
+	VisitRoot(*Root)
+}
+
 type Node interface {
 	Children() []Node
+	Accept(Visitor)
 }
 
 type Header struct {
@@ -39,11 +48,29 @@ func (_ Text) Children() []Node {
 func (h *Header) Children() []Node {
 	return []Node{h.Child}
 }
+
 func (l *List) Children() []Node {
 	return l.Children()
 }
+
 func (c *Code) Children() []Node {
 	return c.Children()
+}
+
+func (t *Text) Accept(v Visitor) {
+	v.VisitText(t)
+}
+
+func (h *Header) Accept(v Visitor) {
+	v.VisitHeader(h)
+}
+
+func (l *List) Accept(v Visitor) {
+	v.VisitList(l)
+}
+
+func (c *Code) Accept(v Visitor) {
+	v.VisitCode(c)
 }
 
 func ParseMd(src string) Root {
