@@ -24,8 +24,8 @@ type Header struct {
 }
 
 type Code struct {
-	Child []Node
-	Lang  string
+	children []Node
+	Lang     string
 }
 
 type List struct {
@@ -54,7 +54,7 @@ func (l *List) Children() []Node {
 }
 
 func (c *Code) Children() []Node {
-	return c.Child
+	return c.children
 }
 
 func (t *Text) Accept(v Visitor) {
@@ -79,10 +79,10 @@ func ParseMd(src string) Root {
 
 	for i := 0; i < len(src); i++ {
 
-		//if child := readCode(&i, src); child != nil {
-		//	root.Children = append(root.Children, child)
-		//	continue
-		//}
+		if child := readCode(&i, src); child != nil {
+			root.Children = append(root.Children, child)
+			continue
+		}
 
 		if child := readUnorderedList(&i, src); child != nil {
 			root.Children = append(root.Children, child)
@@ -109,30 +109,44 @@ func ParseMd(src string) Root {
 }
 
 func readCode(index *int, src string) Node {
-
+	tempindex := *index
 	if len(src)-*index < 3 {
 		return nil
 	}
 
-	if src[*index:3] != "```" {
+	if src[*index:*index+3] != "```" {
 		return nil
 	}
 	*index += 3
-	language := ""
-	textBegin := *index
-	for ; *index < len(src); *index++ {
 
+	code := &Code{
+		children: make([]Node, 0),
+		Lang:     "",
+	}
+
+	for langBegin := *index; *index < len(src); *index++ {
 		if src[*index] == '\n' {
-			language = src[textBegin:*index]
+			code.Lang = src[langBegin:*index]
+			*index++
+			break
+		}
+	}
+
+	for ; *index < len(src); *index++ {
+		if *index+1 >= len(src) {
+			*index = tempindex
+			return nil
 		}
 
+		c := src[*index : *index+3]
+		if c == "```" {
+			*index += 2
+			break
+		}
+		code.children = append(code.children, readText(index, src))
 	}
 
-	print(readText(index, src))
-
-	return &Code{
-		Lang: language,
-	}
+	return code
 
 }
 
@@ -170,10 +184,16 @@ func readOrderedList(index *int, src string) Node {
 			*index--
 			break
 		}
+		if *index+1 >= len(src) {
+			*index--
+			break
+		}
+
 		if src[*index+1] != '.' {
 			*index--
 			break
 		}
+		*index += 2
 		list.children = append(list.children, readText(index, src))
 	}
 
@@ -206,10 +226,8 @@ func readUnorderedList(index *int, src string) Node {
 func readText(index *int, src string) Node {
 	textBegin := *index
 	for ; *index < len(src); *index++ {
-		c := src[*index]
-		if c == '\n' {
+		if src[*index] == '\n' {
 			line := src[textBegin:*index]
-			textBegin = *index + 1
 
 			return &Text{
 				Value: line,
