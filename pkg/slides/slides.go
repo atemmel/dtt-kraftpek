@@ -17,7 +17,7 @@ type Slide struct {
 type readResult struct {
 	Slide
 	Number int
-	Error error
+	Error  error
 }
 
 func readKraftfil(where string) ([]string, error) {
@@ -45,14 +45,13 @@ func ReadSlides(where string) ([]Slide, error) {
 	slides := make([]Slide, len(files))
 
 	for i := 0; i < len(files); i++ {
-		result := <- channel
+		result := <-channel
 		if result.Error != nil {
 			return nil, result.Error
 		}
 
 		slides[result.Number] = result.Slide
 	}
-
 
 	return slides, nil
 }
@@ -62,9 +61,9 @@ func readSlide(channel chan readResult, which string, number int) {
 	bytes, err := os.ReadFile(which)
 	if err != nil {
 		channel <- readResult{
-			Slide: Slide{},
+			Slide:  Slide{},
 			Number: number,
-			Error: errors.New("Kunde inte läsa fil: " + which + err.Error()),
+			Error:  errors.New("Kunde inte läsa fil: " + which + err.Error()),
 		}
 	}
 
@@ -76,6 +75,6 @@ func readSlide(channel chan readResult, which string, number int) {
 			Root: root,
 		},
 		Number: number,
-		Error: nil,
+		Error:  nil,
 	}
 }

@@ -44,15 +44,14 @@ func (r *Renderer) VisitCode(code *md.Code) {
 }
 
 func (r *Renderer) VisitList(list *md.List) {
-	panic(errors.New("Ohanterad nod"))
+	r.x = r.w - 1
 
-	/*
-		DrawStr(r.Screen, r.w, r.y, style, "●")
-		r.x = r.w + 1
-		header.Child.Accept(r)
-		r.x = r.w
-		r.y += 1
-	*/
+	for _, child := range list.Children() {
+		DrawStr(r.Screen, r.w-2, r.y, r.style, "●")
+		child.Accept(r)
+	}
+
+	r.x = r.w
 }
 
 func (r *Renderer) VisitText(text *md.Text) {
@@ -76,7 +75,6 @@ type bounds struct {
 
 func (b *bounds) VisitHeader(header *md.Header) {
 	b.calcW = 1
-	b.h += 1
 	header.Child.Accept(b)
 	b.calcW = 0
 }
@@ -86,7 +84,9 @@ func (b *bounds) VisitCode(code *md.Code) {
 }
 
 func (b *bounds) VisitList(list *md.List) {
-	panic(errors.New("Ohanterad nod"))
+	for _, child := range list.Children() {
+		child.Accept(b)
+	}
 }
 
 func (b *bounds) VisitText(text *md.Text) {
@@ -145,7 +145,13 @@ func (p *Printer) VisitCode(code *md.Code) {
 }
 
 func (p *Printer) VisitList(list *md.List) {
-	panic(errors.New("Ohanterad nod"))
+	p.down()
+	p.pad()
+	fmt.Println("List")
+	for _, child := range list.Children() {
+		child.Accept(p)
+	}
+	p.up()
 }
 
 func (p *Printer) VisitText(text *md.Text) {
