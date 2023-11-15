@@ -1,6 +1,4 @@
-Intro
-
-Här är ett intro
+# Intro
 
 Lorem
 Ipsum
