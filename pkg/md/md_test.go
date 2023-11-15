@@ -103,15 +103,25 @@ random text
 }
 
 func TestParseMdCode(t *testing.T) {
-	src := "#en header" +
-		"```Go" +
-		"print(\"hej\")" +
+	src := "#en header\n" +
+		"```Go\n" +
+		"print(\"hello\")\n" +
+		"print(\"world\")\n" +
 		"```"
 
 	root := ParseMd(src)
 
-	if root.Children != nil {
-		t.Fatal("Inte klart test")
+	if root.Children == nil {
+		t.Fatal("Förväntade sig innehåll")
+	}
+	if root.Children[0].(*Header).Level != 1 {
+		t.Fatal("Förväntades hitta header level1 ,hittade istället: ", root.Children[0].(*Header).Level)
+	}
+	if root.Children[1].(*Code).Lang != "Go" {
+		t.Fatal("Förväntades att koden skulle vara Go, var istället: ", root.Children[1].(*Code).Lang)
+	}
+	if len(root.Children[1].(*Code).children) != 2 {
+		t.Fatal("Förväntades hitta två rader kod, hittade : ", len(root.Children[1].(*Code).children))
 	}
 
 }
