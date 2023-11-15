@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/atemmel/dtt-kraftpek/pkg/md"
@@ -40,7 +39,9 @@ func (r *Renderer) VisitHeader(header *md.Header) {
 }
 
 func (r *Renderer) VisitCode(code *md.Code) {
-	panic(errors.New("Ohanterad nod"))
+	for _, child := range code.Children() {
+		child.Accept(r)
+	}
 }
 
 func (r *Renderer) VisitList(list *md.List) {
@@ -80,7 +81,9 @@ func (b *bounds) VisitHeader(header *md.Header) {
 }
 
 func (b *bounds) VisitCode(code *md.Code) {
-	panic(errors.New("Ohanterad nod"))
+	for _, child := range code.Children() {
+		child.Accept(b)
+	}
 }
 
 func (b *bounds) VisitList(list *md.List) {
@@ -141,7 +144,13 @@ func (p *Printer) VisitHeader(header *md.Header) {
 }
 
 func (p *Printer) VisitCode(code *md.Code) {
-	panic(errors.New("Ohanterad nod"))
+	p.down()
+	p.pad()
+	fmt.Printf("Code, lang: %s\n", code.Lang)
+	for _, child := range code.Children() {
+		child.Accept(p)
+	}
+	p.up()
 }
 
 func (p *Printer) VisitList(list *md.List) {
