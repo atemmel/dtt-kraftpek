@@ -7,10 +7,41 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+var (
+	goKeywords = map[string]bool{
+		"break":       true,
+		"case":        true,
+		"chan":        true,
+		"const":       true,
+		"continue":    true,
+		"default":     true,
+		"defer":       true,
+		"else":        true,
+		"fallthrough": true,
+		"for":         true,
+		"func":        true,
+		"go":          true,
+		"goto":        true,
+		"if":          true,
+		"import":      true,
+		"interface":   true,
+		"map":         true,
+		"package":     true,
+		"range":       true,
+		"return":      true,
+		"select":      true,
+		"struct":      true,
+		"switch":      true,
+		"type":        true,
+		"var":         true,
+	}
+)
+
 type Renderer struct {
 	style      tcell.Style
 	Screen     tcell.Screen
 	w, h, x, y int
+	codeLang   string
 }
 
 func NewRenderer(screen tcell.Screen) *Renderer {
@@ -39,9 +70,11 @@ func (r *Renderer) VisitHeader(header *md.Header) {
 }
 
 func (r *Renderer) VisitCode(code *md.Code) {
+	r.codeLang = code.Lang
 	for _, child := range code.Children() {
 		child.Accept(r)
 	}
+	r.codeLang = ""
 }
 
 func (r *Renderer) VisitList(list *md.List) {
@@ -56,8 +89,43 @@ func (r *Renderer) VisitList(list *md.List) {
 }
 
 func (r *Renderer) VisitText(text *md.Text) {
-	DrawStr(r.Screen, r.x, r.y, r.style, text.Value)
+	switch r.codeLang {
+	case "go":
+		r.drawColoredCodeText(text.Value)
+	default:
+		DrawStr(r.Screen, r.x, r.y, r.style, text.Value)
+	}
 	r.y += 1
+}
+
+func (r *Renderer) drawColoredCodeText(text string) {
+	wordBegin := 0
+	for i, c := range text {
+		if c == ' ' {
+			word := text[wordBegin:i]
+			style := tcell.StyleDefault
+			_, ok := goKeywords[word]
+			if ok {
+				style = tcell.StyleDefault.
+					Foreground(tcell.ColorYellow.TrueColor())
+			}
+
+			DrawStr(r.Screen, r.x+wordBegin, r.y, style, word)
+			wordBegin = i + 1
+		} else if i == len(text)-1 {
+			word := text[wordBegin : i+1]
+
+			style := tcell.StyleDefault
+			_, ok := goKeywords[word]
+			if ok {
+				style = tcell.StyleDefault.
+					Foreground(tcell.ColorYellow.TrueColor())
+			}
+
+			DrawStr(r.Screen, r.x+wordBegin, r.y, style, word)
+			wordBegin = i + 1
+		}
+	}
 }
 
 func (r *Renderer) VisitRoot(root *md.Root) {
