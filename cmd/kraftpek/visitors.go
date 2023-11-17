@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/atemmel/dtt-kraftpek/pkg/md"
 	"github.com/gdamore/tcell/v2"
@@ -36,6 +37,16 @@ var (
 		"var":         true,
 	}
 )
+
+func isKeyword(word string) bool {
+	_, ok := goKeywords[word]
+	return ok
+}
+
+func isNum(word string) bool {
+	_, err := strconv.Atoi(word)
+	return err == nil
+}
 
 type Renderer struct {
 	style      tcell.Style
@@ -117,11 +128,17 @@ func (r *Renderer) drawColoredCodeText(text string) {
 			DrawStr(r.Screen, r.x+wordBegin, r.y, tcell.StyleDefault, prevWord)
 			DrawStr(r.Screen, r.x+strBegin, r.y, style, str)
 			wordBegin = i + 1
+		} else if i != len(text)-1 && text[i:i+2] == "//" {
+			comment := text[i:]
+			style := tcell.StyleDefault.
+				Foreground(tcell.ColorGray.TrueColor()).
+				Attributes(tcell.AttrItalic)
+			DrawStr(r.Screen, r.x+wordBegin, r.y, style, comment)
+			break
 		} else if c == ' ' {
 			word := text[wordBegin:i]
 			style := tcell.StyleDefault
-			_, ok := goKeywords[word]
-			if ok {
+			if isKeyword(word) {
 				style = tcell.StyleDefault.
 					Foreground(tcell.ColorYellow.TrueColor())
 			}
@@ -132,13 +149,19 @@ func (r *Renderer) drawColoredCodeText(text string) {
 			word := text[wordBegin : i+1]
 
 			style := tcell.StyleDefault
-			_, ok := goKeywords[word]
-			if ok {
+			if isKeyword(word) {
 				style = tcell.StyleDefault.
 					Foreground(tcell.ColorYellow.TrueColor())
 			}
 
 			DrawStr(r.Screen, r.x+wordBegin, r.y, style, word)
+			wordBegin = i + 1
+		}
+
+		if num := text[wordBegin : i+1]; isNum(num) {
+			style := tcell.StyleDefault.
+				Foreground(tcell.ColorPurple.TrueColor())
+			DrawStr(r.Screen, r.x+wordBegin, r.y, style, num)
 			wordBegin = i + 1
 		}
 	}

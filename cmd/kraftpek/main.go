@@ -108,6 +108,8 @@ func main() {
 			}
 
 			switch ev.Rune() {
+			case 'r':
+				screen.Sync()
 			case 'q':
 				Quit(screen)
 			case 'h':
