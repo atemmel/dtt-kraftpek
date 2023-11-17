@@ -89,10 +89,22 @@ func (r *Renderer) VisitCode(code *md.Code) {
 }
 
 func (r *Renderer) VisitList(list *md.List) {
-	r.x = r.w - 1
+	if list.Ordered {
+		r.x = r.w + 2
+	} else {
+		r.x = r.w + 1
+	}
 
-	for _, child := range list.Children() {
-		DrawStr(r.Screen, r.w-2, r.y, r.style, "●")
+	style := tcell.StyleDefault.
+		Foreground(tcell.ColorYellow).
+		Attributes(tcell.AttrBold)
+
+	for i, child := range list.Children() {
+		prefix := "●"
+		if list.Ordered {
+			prefix = strconv.Itoa(i+1) + "."
+		}
+		DrawStr(r.Screen, r.w, r.y, style, prefix)
 		child.Accept(r)
 	}
 
