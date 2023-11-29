@@ -36,10 +36,22 @@ var (
 		"type":        true,
 		"var":         true,
 	}
+
+	goTypes = map[string]bool{
+		"string": true,
+		"int": true,
+		"float": true,
+		"bool": true,
+	}
 )
 
 func isKeyword(word string) bool {
 	_, ok := goKeywords[word]
+	return ok
+}
+
+func isType(word string) bool {
+	_, ok := goTypes[word]
 	return ok
 }
 
@@ -157,6 +169,10 @@ func (r *Renderer) drawColoredCodeText(text string) {
 			if isKeyword(word) {
 				style = tcell.StyleDefault.
 					Foreground(tcell.ColorYellow).
+					Background(tcell.ColorBlack)
+			} else if isType(word) {
+				style = tcell.StyleDefault.
+					Foreground(tcell.ColorGreen).
 					Background(tcell.ColorBlack)
 			}
 
