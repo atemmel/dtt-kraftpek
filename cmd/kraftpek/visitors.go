@@ -68,7 +68,8 @@ func NewRenderer(screen tcell.Screen) *Renderer {
 
 func (r *Renderer) VisitHeader(header *md.Header) {
 	r.style = tcell.StyleDefault.
-		Foreground(tcell.ColorBlue.TrueColor()).
+		Foreground(tcell.ColorBlue).
+		Background(tcell.ColorBlack).
 		Bold(true)
 
 	r.x = r.w - 1
@@ -97,6 +98,7 @@ func (r *Renderer) VisitList(list *md.List) {
 
 	style := tcell.StyleDefault.
 		Foreground(tcell.ColorYellow).
+		Background(tcell.ColorBlack).
 		Attributes(tcell.AttrBold)
 
 	for i, child := range list.Children() {
@@ -136,14 +138,16 @@ func (r *Renderer) drawColoredCodeText(text string) {
 			str := text[strBegin : i+1]
 			prevWord := text[wordBegin:strBegin]
 			style := tcell.StyleDefault.
-				Foreground(tcell.ColorPurple.TrueColor())
+				Foreground(tcell.ColorPurple).
+				Background(tcell.ColorBlack)
 			DrawStr(r.Screen, r.x+wordBegin, r.y, tcell.StyleDefault, prevWord)
 			DrawStr(r.Screen, r.x+strBegin, r.y, style, str)
 			wordBegin = i + 1
 		} else if i != len(text)-1 && text[i:i+2] == "//" {
 			comment := text[i:]
 			style := tcell.StyleDefault.
-				Foreground(tcell.ColorGray.TrueColor()).
+				Foreground(tcell.ColorGray).
+				Background(tcell.ColorBlack).
 				Attributes(tcell.AttrItalic)
 			DrawStr(r.Screen, r.x+wordBegin, r.y, style, comment)
 			break
@@ -152,7 +156,8 @@ func (r *Renderer) drawColoredCodeText(text string) {
 			style := tcell.StyleDefault
 			if isKeyword(word) {
 				style = tcell.StyleDefault.
-					Foreground(tcell.ColorYellow.TrueColor())
+					Foreground(tcell.ColorYellow).
+					Background(tcell.ColorBlack)
 			}
 
 			DrawStr(r.Screen, r.x+wordBegin, r.y, style, word)
@@ -163,7 +168,8 @@ func (r *Renderer) drawColoredCodeText(text string) {
 			style := tcell.StyleDefault
 			if isKeyword(word) {
 				style = tcell.StyleDefault.
-					Foreground(tcell.ColorYellow.TrueColor())
+					Foreground(tcell.ColorYellow).
+					Background(tcell.ColorBlack)
 			}
 
 			DrawStr(r.Screen, r.x+wordBegin, r.y, style, word)
@@ -172,7 +178,8 @@ func (r *Renderer) drawColoredCodeText(text string) {
 
 		if num := text[wordBegin : i+1]; isNum(num) {
 			style := tcell.StyleDefault.
-				Foreground(tcell.ColorPurple.TrueColor())
+				Foreground(tcell.ColorPurple).
+				Background(tcell.ColorBlack)
 			DrawStr(r.Screen, r.x+wordBegin, r.y, style, num)
 			wordBegin = i + 1
 		}
