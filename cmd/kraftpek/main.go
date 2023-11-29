@@ -3,7 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/atemmel/dtt-kraftpek/pkg/md"
 	"github.com/atemmel/dtt-kraftpek/pkg/slides"
@@ -43,6 +46,44 @@ func Right() {
 	if currentSlide < len(loadedSlides)-1 {
 		currentSlide++
 	}
+}
+
+func Yank() {
+	src := ""
+	root := &loadedSlides[currentSlide].Root
+	for _, child := range root.Children {
+		code, ok := child.(*md.Code)
+		if !ok {
+			continue
+		}
+		for _, child := range code.Children() {
+			text, ok := child.(*md.Text)
+			if !ok {
+				continue
+			}
+
+			src += text.Value + "\n"
+		}
+	}
+
+	src = strings.TrimSpace(src)
+
+	if src == "" {
+		return
+	}
+
+	cmd := exec.Command("xclip", "-selection", "clipboard")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return
+	}
+
+	go func() {
+		defer stdin.Close()
+		io.WriteString(stdin, src)
+	}()
+
+	cmd.Run()
 }
 
 func drawInfo(screen tcell.Screen) {
@@ -137,6 +178,8 @@ func main() {
 				Left()
 			case 'l':
 				Right()
+			case 'y':
+				Yank()
 			}
 		}
 	}
