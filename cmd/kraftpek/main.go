@@ -24,7 +24,7 @@ func Draw(screen tcell.Screen, renderer *Renderer) {
 
 	root := &loadedSlides[currentSlide].Root
 	renderer.VisitRoot(root)
-
+	drawInfo(screen)
 	screen.Show()
 }
 
@@ -42,6 +42,27 @@ func Left() {
 func Right() {
 	if currentSlide < len(loadedSlides)-1 {
 		currentSlide++
+	}
+}
+
+func drawInfo(screen tcell.Screen) {
+	w, h :=screen.Size()
+
+	style := tcell.StyleDefault.
+		Foreground(tcell.ColorGray).
+		Background(tcell.ColorBlack)
+
+	{
+		currentSlideName := loadedSlides[currentSlide].Name
+		x, y := w - len(currentSlideName) - 3, 1
+		DrawStr(screen, x, y, style, currentSlideName)
+	}
+
+	{
+		nSlides := len(loadedSlides)
+		indexStr := fmt.Sprintf("%d/%d", currentSlide + 1, nSlides)
+		x, y := w - len(indexStr) - 3, h - 2
+		DrawStr(screen, x, y, style, indexStr)
 	}
 }
 
