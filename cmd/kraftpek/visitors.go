@@ -4,61 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/atemmel/dtt-kraftpek/pkg/highlighting"
 	"github.com/atemmel/dtt-kraftpek/pkg/md"
 	"github.com/gdamore/tcell/v2"
 )
-
-var (
-	goKeywords = map[string]bool{
-		"break":       true,
-		"case":        true,
-		"chan":        true,
-		"const":       true,
-		"continue":    true,
-		"default":     true,
-		"defer":       true,
-		"else":        true,
-		"fallthrough": true,
-		"for":         true,
-		"func":        true,
-		"go":          true,
-		"goto":        true,
-		"if":          true,
-		"import":      true,
-		"interface":   true,
-		"map":         true,
-		"package":     true,
-		"range":       true,
-		"return":      true,
-		"select":      true,
-		"struct":      true,
-		"switch":      true,
-		"type":        true,
-		"var":         true,
-	}
-
-	goTypes = map[string]bool{
-		"string": true,
-		"int": true,
-		"float": true,
-		"bool": true,
-	}
-)
-
-func isKeyword(word string) bool {
-	_, ok := goKeywords[word]
-	return ok
-}
-
-func isType(word string) bool {
-	_, ok := goTypes[word]
-	return ok
-}
-
-func isNum(word string) bool {
-	_, err := strconv.Atoi(word)
-	return err == nil
-}
 
 type Renderer struct {
 	style      tcell.Style
@@ -136,69 +85,38 @@ func (r *Renderer) VisitText(text *md.Text) {
 }
 
 func (r *Renderer) drawColoredCodeText(text string) {
-	wordBegin := 0
-	for i := 0; i < len(text); i++ {
-		c := text[i]
-		if c == '"' {
-			strBegin := i
-			i++
-			for ; i < len(text); i++ {
-				if text[i] == '"' {
-					break
-				}
-			}
-			str := text[strBegin : i+1]
-			prevWord := text[wordBegin:strBegin]
-			style := tcell.StyleDefault.
-				Foreground(tcell.ColorPurple).
-				Background(tcell.ColorBlack)
-			DrawStr(r.Screen, r.x+wordBegin, r.y, tcell.StyleDefault, prevWord)
-			DrawStr(r.Screen, r.x+strBegin, r.y, style, str)
-			wordBegin = i + 1
-		} else if i != len(text)-1 && text[i:i+2] == "//" {
-			comment := text[i:]
-			style := tcell.StyleDefault.
+	fragments := highlighting.Parse(text)
+	offset := 0
+	for _, frag := range fragments {
+		style := tcell.StyleDefault
+		switch frag.Kind {
+		case highlighting.Comment:
+			style = tcell.StyleDefault.
 				Foreground(tcell.ColorGray).
 				Background(tcell.ColorBlack).
 				Attributes(tcell.AttrItalic)
-			DrawStr(r.Screen, r.x+wordBegin, r.y, style, comment)
-			break
-		} else if c == ' ' {
-			word := text[wordBegin:i]
-			style := tcell.StyleDefault
-			if isKeyword(word) {
-				style = tcell.StyleDefault.
-					Foreground(tcell.ColorYellow).
-					Background(tcell.ColorBlack)
-			} else if isType(word) {
-				style = tcell.StyleDefault.
-					Foreground(tcell.ColorGreen).
-					Background(tcell.ColorBlack)
-			}
-
-			DrawStr(r.Screen, r.x+wordBegin, r.y, style, word)
-			wordBegin = i + 1
-		} else if i == len(text)-1 {
-			word := text[wordBegin : i+1]
-
-			style := tcell.StyleDefault
-			if isKeyword(word) {
-				style = tcell.StyleDefault.
-					Foreground(tcell.ColorYellow).
-					Background(tcell.ColorBlack)
-			}
-
-			DrawStr(r.Screen, r.x+wordBegin, r.y, style, word)
-			wordBegin = i + 1
-		}
-
-		if num := text[wordBegin : i+1]; isNum(num) {
-			style := tcell.StyleDefault.
+		case highlighting.Keyword:
+			style = tcell.StyleDefault.
+				Foreground(tcell.ColorYellow).
+				Background(tcell.ColorBlack)
+		case highlighting.Normal:
+			// oförändrad
+		case highlighting.NumberLiteral:
+			style = tcell.StyleDefault.
 				Foreground(tcell.ColorPurple).
 				Background(tcell.ColorBlack)
-			DrawStr(r.Screen, r.x+wordBegin, r.y, style, num)
-			wordBegin = i + 1
+		case highlighting.StringLiteral:
+			style = tcell.StyleDefault.
+				Foreground(tcell.ColorPurple).
+				Background(tcell.ColorBlack)
+		case highlighting.Type:
+			style = tcell.StyleDefault.
+				Foreground(tcell.ColorGreen).
+				Background(tcell.ColorBlack)
 		}
+
+		DrawStr(r.Screen, r.x+offset, r.y, style, frag.Content)
+		offset += len(frag.Content)
 	}
 }
 
