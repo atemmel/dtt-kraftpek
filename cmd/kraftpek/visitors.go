@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/atemmel/dtt-kraftpek/pkg/highlighting"
 	"github.com/atemmel/dtt-kraftpek/pkg/md"
@@ -102,6 +103,8 @@ func (r *Renderer) drawColoredCodeText(text string) {
 		case highlighting.Normal:
 			// oförändrad
 		case highlighting.NumberLiteral:
+			fallthrough
+		case highlighting.Value:
 			style = tcell.StyleDefault.
 				Foreground(tcell.ColorPurple).
 				Background(tcell.ColorBlack)
@@ -109,6 +112,8 @@ func (r *Renderer) drawColoredCodeText(text string) {
 			style = tcell.StyleDefault.
 				Foreground(tcell.ColorPurple).
 				Background(tcell.ColorBlack)
+		case highlighting.Function:
+		fallthrough
 		case highlighting.Type:
 			style = tcell.StyleDefault.
 				Foreground(tcell.ColorGreen).
@@ -116,7 +121,7 @@ func (r *Renderer) drawColoredCodeText(text string) {
 		}
 
 		DrawStr(r.Screen, r.x+offset, r.y, style, frag.Content)
-		offset += len(frag.Content)
+		offset += utf8.RuneCountInString(frag.Content)
 	}
 }
 

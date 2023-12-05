@@ -31,11 +31,24 @@ var (
 		"var":         true,
 	}
 
+	goValues = map[string]bool{
+		"false": true,
+		"nil": true,
+		"true": true,
+	}
+
 	goTypes = map[string]bool{
 		"string": true,
 		"int":    true,
 		"float":  true,
 		"bool":   true,
+	}
+
+	goFns = map[string]struct{}{
+		"append": {},
+		"len": {},
+		"make": {},
+		"panic": {},
 	}
 )
 
@@ -44,8 +57,18 @@ func isKeyword(word string) bool {
 	return ok
 }
 
+func isValue(word string) bool {
+	_, ok := goValues[word]
+	return ok
+}
+
 func isType(word string) bool {
 	_, ok := goTypes[word]
+	return ok
+}
+
+func isFn(word string) bool {
+	_, ok := goFns[word]
 	return ok
 }
 

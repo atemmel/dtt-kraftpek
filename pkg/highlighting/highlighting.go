@@ -10,6 +10,8 @@ const (
 	Keyword
 	StringLiteral
 	NumberLiteral
+	Value
+	Function
 	Comment
 )
 
@@ -111,6 +113,14 @@ func lookupFragmentKindFromContent(content string) Kind {
 
 	if isNum(content) {
 		return NumberLiteral
+	}
+
+	if isValue(content) {
+		return Value
+	}
+
+	if isFn(content) {
+		return Function
 	}
 
 	return Normal

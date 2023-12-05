@@ -121,3 +121,37 @@ func TestParseFailure1(t *testing.T) {
 	AssertFragmentContent(t, fragments[1], "(")
 	AssertFragmentContent(t, fragments[2], "map")
 }
+
+func TestParseFailure2(t *testing.T) {
+	src := "fmt.Println(\"j är\", j)   // skriv ut det nya värdet på j"
+
+	fragments := Parse(src)
+
+	AssertFragmentContent(t, fragments[0], "fmt.Println")
+	AssertFragmentContent(t, fragments[1], "(")
+	AssertFragmentContent(t, fragments[2], "\"j är\"")
+	AssertFragmentContent(t, fragments[3], ",")
+	AssertFragmentContent(t, fragments[4], " ")
+	AssertFragmentContent(t, fragments[5], "j")
+	AssertFragmentContent(t, fragments[6], ")")
+	AssertFragmentContent(t, fragments[7], " ")
+	AssertFragmentContent(t, fragments[8], " ")
+	AssertFragmentContent(t, fragments[9], " ")
+	AssertFragmentContent(t, fragments[10], "// skriv ut det nya värdet på j")
+}
+
+func TestParseFailure3(t *testing.T) {
+	src := "if err != nil {"
+
+	fragments := Parse(src)
+
+	AssertFragmentContent(t, fragments[0], "if")
+	AssertFragmentContent(t, fragments[1], " ")
+	AssertFragmentContent(t, fragments[2], "err")
+	AssertFragmentContent(t, fragments[3], " ")
+	AssertFragmentContent(t, fragments[4], "!")
+	AssertFragmentContent(t, fragments[5], "=")
+	AssertFragmentContent(t, fragments[6], " ")
+	AssertFragmentContent(t, fragments[7], "nil")
+
+}
