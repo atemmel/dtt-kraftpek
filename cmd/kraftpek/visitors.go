@@ -8,6 +8,7 @@ import (
 	"github.com/atemmel/dtt-kraftpek/pkg/highlighting"
 	"github.com/atemmel/dtt-kraftpek/pkg/md"
 	"github.com/gdamore/tcell/v2"
+	"github.com/mattn/go-runewidth"
 )
 
 type Renderer struct {
@@ -113,7 +114,7 @@ func (r *Renderer) drawColoredCodeText(text string) {
 				Foreground(tcell.ColorPurple).
 				Background(tcell.ColorBlack)
 		case highlighting.Function:
-		fallthrough
+			fallthrough
 		case highlighting.Type:
 			style = tcell.StyleDefault.
 				Foreground(tcell.ColorGreen).
@@ -158,7 +159,7 @@ func (b *bounds) VisitList(list *md.List) {
 }
 
 func (b *bounds) VisitText(text *md.Text) {
-	w := len(text.Value) + b.calcW
+	w := runewidth.StringWidth(text.Value) + b.calcW
 	if w > b.w {
 		b.w = w
 	}
